@@ -1973,7 +1973,7 @@ class tx_datamintsfeuser_pi1 extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin {
 			$disabledField = ($fieldConfig['readOnly']) ? ' disabled="disabled"' : '';
 
 			// Standardkonfigurationen laden.
-			if (!isset($arrCurrentData[$fieldName]) && $fieldConfig['default']) {
+			if (!$arrCurrentData[$fieldName] && $fieldConfig['default']) {
 				$arrCurrentData[$fieldName] = $fieldConfig['default'];
 			}
 
@@ -2295,43 +2295,44 @@ class tx_datamintsfeuser_pi1 extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin {
 	 */
 	public function showCheck($fieldName, $fieldConfig, $arrCurrentData, $disabledField = '') {
 		$content = '';
-
-		if (count($fieldConfig['items']) > 1) {
-			// ToDo: Logik von Anzeige trennen!
-			// Moeglichkeit das der gespeicherte Wert eine Bitmap ist, daher aufsplitten in ein Array, wie es auch von einem abgesendeten Formular kommen wuerde.
-			if (!is_array($arrCurrentData[$fieldName])) {
-				$arrCurrentData[$fieldName] = str_split(strrev(decbin($arrCurrentData[$fieldName])));
-			}
-
-			$content .= '<input type="hidden" name="' . $this->getFieldName($fieldName) . '[]" value="" />';
-
-			$content .= '<div class="list clearfix">';
-
-			$i = 1;
-
-			// Items, die in der TCA-Konfiguration festgelegt wurden.
-			foreach (array_values($fieldConfig['items']) as $key => $checkItem) {
-				// ToDo: Nicht auf den Key verlassen!
-				if ($key > 0 && ($key % $fieldConfig['cols']) == 0) {
-					$content .= '</div><div class="list clearfix">';
+		if(!empty($fieldConfig['items'])) {
+			if (count($fieldConfig['items']) > 1) {
+				// ToDo: Logik von Anzeige trennen!
+				// Moeglichkeit das der gespeicherte Wert eine Bitmap ist, daher aufsplitten in ein Array, wie es auch von einem abgesendeten Formular kommen wuerde.
+				if (!is_array($arrCurrentData[$fieldName])) {
+					$arrCurrentData[$fieldName] = str_split(strrev(decbin($arrCurrentData[$fieldName])));
 				}
 
-				$checked = ($arrCurrentData[$fieldName][$key]) ? ' checked="checked"' : '';
+				$content .= '<input type="hidden" name="' . $this->getFieldName($fieldName) . '[]" value="" />';
 
-				$content .= '<div id="' . $this->getFieldId($fieldName, 'item', $i, 'wrapper') . '" class="item item-' . $i . '">';
-				$content .= '<input type="checkbox" name="' . $this->getFieldName($fieldName, $key) . '" value="1"' . $checked . $disabledField . ' id="' . $this->getFieldId($fieldName, 'item', $i) . '" />';
-				$content .= '<label for="' . $this->getFieldId($fieldName, 'item', $i) . '">' . $this->getLabel($checkItem[0], FALSE) . '</label>';
+				$content .= '<div class="list clearfix">';
+
+				$i = 1;
+
+				// Items, die in der TCA-Konfiguration festgelegt wurden.
+				foreach (array_values($fieldConfig['items']) as $key => $checkItem) {
+					// ToDo: Nicht auf den Key verlassen!
+					if ($key > 0 && ($key % $fieldConfig['cols']) == 0) {
+						$content .= '</div><div class="list clearfix">';
+					}
+
+					$checked = ($arrCurrentData[$fieldName][$key]) ? ' checked="checked"' : '';
+
+					$content .= '<div id="' . $this->getFieldId($fieldName, 'item', $i, 'wrapper') . '" class="item item-' . $i . '">';
+					$content .= '<input type="checkbox" name="' . $this->getFieldName($fieldName, $key) . '" value="1"' . $checked . $disabledField . ' id="' . $this->getFieldId($fieldName, 'item', $i) . '" />';
+					$content .= '<label for="' . $this->getFieldId($fieldName, 'item', $i) . '">' . $this->getLabel($checkItem[0], FALSE) . '</label>';
+					$content .= '</div>';
+
+					$i++;
+				}
+
 				$content .= '</div>';
+			} else {
+				$checked = ($arrCurrentData[$fieldName]) ? ' checked="checked"' : '';
 
-				$i++;
+				$content .= '<input type="hidden" name="' . $this->getFieldName($fieldName) . '" value="0" />';
+				$content .= '<input type="checkbox" name="' . $this->getFieldName($fieldName) . '" value="1"' . $checked . $disabledField . ' id="' . $this->getFieldId($fieldName) . '" />';
 			}
-
-			$content .= '</div>';
-		} else {
-			$checked = ($arrCurrentData[$fieldName]) ? ' checked="checked"' : '';
-
-			$content .= '<input type="hidden" name="' . $this->getFieldName($fieldName) . '" value="0" />';
-			$content .= '<input type="checkbox" name="' . $this->getFieldName($fieldName) . '" value="1"' . $checked . $disabledField . ' id="' . $this->getFieldId($fieldName) . '" />';
 		}
 
 		return $content;
@@ -3222,10 +3223,12 @@ class tx_datamintsfeuser_pi1 extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin {
 			$itemIdSuffix = 'item';
 
 			// Die Anzahl der Felder die ausgegeben wurden (falls mehrere Felder ausgegeben, also kein Select und nur mehr als eine Checkbox).
-			if ($fieldConfig['type'] == 'radio'
-					|| ($fieldConfig['type'] == 'check' && count($fieldConfig['items']) > 1)
-					|| ($fieldConfig['type'] == 'select' && $fieldConfig['renderMode'] == 'checkbox')) {
-				$itemCount = count($fieldConfig['items']);
+			if(!empty($fieldConfig['items'])) {
+				if ($fieldConfig['type'] == 'radio'
+						|| ($fieldConfig['type'] == 'check' && count($fieldConfig['items']) > 1)
+						|| ($fieldConfig['type'] == 'select' && $fieldConfig['renderMode'] == 'checkbox')) {
+					$itemCount = count($fieldConfig['items']);
+				}
 			}
 
 			// Die Anzahl der Felder die ausgegeben wurden, wird beim Typ DB ueber einen Count auf die erlaubten Tabellen ermittelt.

@@ -1,0 +1,17 @@
+{
+    "name": "hojaonline/datamints_feuser",
+    "description": "User registration and edit plugin, fully configurable, custom validators, autologin, double-opt-in, admin approval, IRRE configuration, resend activation mail, redirect features, support for saltedpasswords, support for salesforce. More to come!",
+    "type": "typo3-cms-extension",
+    "version": "0.11.15",
+    "license": "GPL-3.0+",
+    "require": {
+        "typo3/cms-core": ">=6.2.0,<9.0.0"
+    },
+    "authors": [
+        {
+            "name": "Bernhard Baumgartl, datamints GmbH",
+            "email": "b.baumgartl@datamints.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
